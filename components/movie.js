@@ -1,17 +1,24 @@
 const superagent = require('superagent');
 require('dotenv').config();
 const MOVIE_API=process.env.MOVIE_API;
+const inMemory = {};
 
 
 handelMovie=(req,res)=>{
-    console.log(req.query.query);
+  if (inMemory[req.query.query] !== undefined) { // return cached data only when that ingredient is a key in our memory obj
+    // console.log(' we got the data from the memory');
+    res.send(inMemory[req.query.query])
+  }
+  else{
+    // console.log('getting the data from the API');
+    // console.log(req.query.query);
   const movieUrl=`https://api.themoviedb.org/3/search/movie?api_key=${MOVIE_API}&query=${req.query.query}`
   superagent.get(movieUrl).then(movieData=>{
-    console.log(movieData.body.results);
     const filteredMovieData=movieData.body.results.map(data=> new Movie(data))
+    inMemory[req.query.query]=filteredMovieData;
     res.send(filteredMovieData)
    
-  })
+  })}
   
   }
 
